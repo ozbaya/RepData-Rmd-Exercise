@@ -3,11 +3,46 @@
 
 ## Loading and preprocessing the data
 
+First load the data
 
+```{r}
+df_data <- read.csv("C:\\Users\\aozbay\\Desktop\\Reproducible Research\\activity.csv")
+head(df_data)
+```
+
+Looks like there are NAs in the steps column. Chnage them to 0s.
+
+```{r}
+df_data[is.na(df_data$steps),"steps"] <- 0
+head(df_data)
+```
 
 ## What is mean total number of steps taken per day?
 
+Let's first calculate the stepstaken each day
 
+```{r}
+steps.daily <- aggregate(df_data$steps, by=list(df_data$date), FUN=sum)
+colnames(steps.daily) <- c("date","steps")
+head(steps.daily)
+```
+
+Let's take a look at the historgram
+
+```{r}
+hist(steps.daily$steps)
+```
+
+What are the mean and median of steps?
+
+```{r}
+steps.summary <- summary(steps.daily$steps)
+steps.median <- steps.summary[3]
+steps.mean <- steps.summary[4]
+print(steps.summary)
+```
+
+The median is `r steps.median` and the mean is `r steps.mean`.
 
 ## What is the average daily activity pattern?
 
