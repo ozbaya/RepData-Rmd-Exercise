@@ -153,5 +153,5 @@ plot(y=avg_steps[avg_steps$day_label=="weekend","avg_steps"],
      ylab="Average Steps",
      sub="Weekend")
 ```
-par()
+
 
