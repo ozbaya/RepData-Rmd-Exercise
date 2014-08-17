@@ -10,12 +10,13 @@ df_data <- read.csv("C:\\Users\\aozbay\\Desktop\\Reproducible Research\\activity
 head(df_data)
 ```
 
-Looks like there are NAs in the steps column. Chnage them to 0s.
+Looks like there are NAs in the steps column. Remove the records with NAs for the time being. We will do a better job of imputing later.
 
 ```{r}
-df_data[is.na(df_data$steps),"steps"] <- 0
+df_data <- df_data[complete.cases(df_data),]
 head(df_data)
 ```
+
 
 ## What is mean total number of steps taken per day?
 
@@ -46,10 +47,111 @@ The median is `r steps.median` and the mean is `r steps.mean`.
 
 ## What is the average daily activity pattern?
 
+First let's find the average number of steps taken each 5 minute period
 
+```{r}
+steps.five_minperiod <- aggregate(df_data$steps, list(df_data$interval), mean)
+colnames(steps.five_minperiod ) <- c("interval", "avg.steps")
+head(steps.five_minperiod)
+```
+
+Then let's plot it to see if there is a pattern
+
+```{r}
+plot(y=steps.five_minperiod$avg.steps, x=steps.five_minperiod$interval, type="l"
+    ,xlab="Interval"
+    ,ylab="Average Steps")
+```
+
+```{r echo=FALSE}
+steps.interval_max_avg_steps <- 
+  steps.five_minperiod[order(steps.five_minperiod$avg.steps, decreasing=TRUE)[1],]
+```
+
+The 5-minute interval, on average across all the days, that contains the maximum number of steps is `r steps.interval_max_avg_steps$interval` with `r steps.interval_max_avg_steps$avg.steps` average steps.
 
 ## Imputing missing values
 
+We originally removed records with NAs. Let's do a better job by imputing them. First load the data again.
+
+```{r}
+df_data_new <- read.csv("C:\\Users\\aozbay\\Desktop\\Reproducible Research\\activity.csv")
+head(df_data_new)
+steps_new.num_missing_vals <- sum(is.na(df_data_new$steps))
+```
+
+There are `r steps_new.num_missing_vals` missing values. We already have the mean values for each interval. Let's substitute these means for the missing values.
+
+```{r}
+df_data_temp <- df_data_new[is.na(df_data_new$steps),]
+df_data_temp <- merge(df_data_temp, steps.five_minperiod, by="interval")
+df_data_temp$steps <- df_data_temp$avg.steps
+df_data_temp$avg.steps <- NULL
+df_data_new <- rbind(df_data_new[!is.na(df_data_new$steps),], df_data_temp)
+df_data_new <- df_data_new[order(df_data_new$date, df_data_new$interval),]
+rownames(df_data_new) <- 1:nrow(df_data_new)
+head(df_data_new)
+```
+
+Now let's recalculate the stepstaken each day
+
+```{r}
+steps_new.daily <- aggregate(df_data_new$steps, by=list(df_data_new$date), FUN=sum)
+colnames(steps_new.daily) <- c("date","steps")
+head(steps_new.daily)
+```
+
+Let's take a look at the historgram
+
+```{r}
+hist(steps_new.daily$steps)
+```
+
+What are the mean and median of steps?
+
+```{r}
+steps_new.summary <- summary(steps_new.daily$steps)
+steps_new.median <- steps_new.summary[3]
+steps_new.mean <- steps_new.summary[4]
+print(steps_new.summary)
+```
+
+The new median is `r steps_new.median` and the new mean is `r steps_new.mean`.
+Previously the median was `r steps.median` and the mean was `r steps.mean`.
+
+Only the median value changed after the imputation, as expected.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+In order to find any patterns between weekdays and weekends, let's modify our data frame a little.
+
+```{r}
+df_data_new$day_of_week <- weekdays(as.Date(df_data_new$date))
+df_data_new$day_label <- "weekday"
+df_data_new[(df_data_new$day_of_week == "Saturday" | df_data_new$day_of_week == "Sunday"),"day_label"] <- "weekend"
+df_data_new$day_of_week <- NULL
+head(df_data_new)
+```
+
+Let's calculate the average steps by interval by day_label
+
+```{r}
+avg_steps <- aggregate(df_data_new$steps, list(df_data_new$interval, df_data_new$day_label), FUN=mean)
+colnames(avg_steps) <- c("interval", "day_label", "avg_steps")
+par(mfcol=c(2,1))
+plot(y=avg_steps[avg_steps$day_label=="weekday","avg_steps"],
+     x=avg_steps[avg_steps$day_label=="weekday","interval"],
+     type="l",
+     xlab="Interval",
+     ylab="Average Steps",
+     sub="Weekday")
+plot(y=avg_steps[avg_steps$day_label=="weekend","avg_steps"],
+     x=avg_steps[avg_steps$day_label=="weekend","interval"],
+     type="l",
+     xlab="Interval",
+     ylab="Average Steps",
+     sub="Weekend")
+```
+par()
+
