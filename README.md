@@ -1,5 +1,7 @@
 ## Introduction
 
+The objective of this exercise was to learn how to use an Rmd file to knit content and computation together. I tried to accomplish this through the following case study:
+
 It is now possible to collect a large amount of data about personal
 movement using activity monitoring devices such as a
 [Fitbit](http://www.fitbit.com), [Nike
