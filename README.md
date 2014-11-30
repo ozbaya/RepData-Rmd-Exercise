@@ -25,8 +25,9 @@ In this exercise to use an Rmd file to generate a report, the following steps ar
 2. Process/transform the data 
 
 3. Answer key questions and explain important steps, like:
-
-### What is mean total number of steps taken per day?
-### What is the average daily activity pattern?
-### Imputing missing values
-### Are there differences in activity patterns between weekdays and weekends?
+<ul>
+<li>What is mean total number of steps taken per day?
+<li> What is the average daily activity pattern?
+<li>Imputing missing values
+<li>Are there differences in activity patterns between weekdays and weekends?
+</ul>
